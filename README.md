@@ -9,7 +9,7 @@ shop/
 │   ├── database.py      # PostgreSQL 연결 + 트랜잭션 관리
 │   ├── auth.py          # 비밀번호 해싱, JWT 토큰
 │   ├── requirements.txt
-│   └── .env             # DB 접속 정보 (git에 올리지 말 것!)
+│   └── .env             # DB 접속 정보 (git에 올리면 안 됨)
 ├── sql/
 │   └── schema.sql       # 테이블 정의 + 샘플 데이터
 └── frontend/
