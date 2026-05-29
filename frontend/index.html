@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STITCH — 옷 쇼핑몰</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f3ef; --text: #1a1a1a; --accent: #c9a96e;
+      --muted: #8a8680; --card: #ffffff; --border: #e0ddd8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; font-weight: 300; }
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; background: var(--bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .logo { font-family: 'Playfair Display', serif; font-size: 24px; letter-spacing: 4px; }
+    .nav-right { display: flex; gap: 24px; align-items: center; }
+    .nav-right button { background: none; border: none; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; color: var(--muted); letter-spacing: 1px; transition: color .2s; }
+    .nav-right button:hover { color: var(--text); }
+    .btn-cart { position: relative; }
+    .cart-badge { position: absolute; top: -6px; right: -10px; background: var(--accent); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+    .hero { padding: 80px 48px 60px; display: flex; align-items: flex-end; gap: 12px; }
+    .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(48px, 8vw, 96px); line-height: .9; }
+    .hero-sub { font-size: 13px; color: var(--muted); letter-spacing: 2px; margin-bottom: 12px; }
+    .filter-bar { padding: 0 48px 32px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn { padding: 8px 20px; border: 1px solid var(--border); background: none; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; letter-spacing: 1px; transition: all .2s; border-radius: 2px; }
+    .filter-btn.active, .filter-btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1px; padding: 0 48px 80px; background: var(--border); }
+    .product-card { background: var(--card); cursor: pointer; transition: transform .3s; overflow: hidden; }
+    .product-card:hover { transform: translateY(-4px); }
+    .product-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block; transition: transform .5s; }
+    .product-card:hover img { transform: scale(1.04); }
+    .card-info { padding: 16px; }
+    .card-category { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+    .card-name { font-size: 15px; font-weight: 400; margin-bottom: 8px; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; }
+    .card-price { font-size: 14px; font-weight: 500; }
+    .card-stock { font-size: 11px; color: var(--muted); }
+    .btn-add { padding: 8px 16px; background: var(--text); color: var(--bg); border: none; cursor: pointer; font-size: 11px; letter-spacing: 1px; font-family: 'Noto Sans KR', sans-serif; transition: background .2s; }
+    .btn-add:hover { background: var(--accent); }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; justify-content: center; align-items: center; }
+    .overlay.show { display: flex; }
+    .modal { background: var(--card); width: min(480px, 90vw); padding: 40px; position: relative; max-height: 90vh; overflow-y: auto; }
+    .modal-close { position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--muted); }
+    .modal h2 { font-family: 'Playfair Display', serif; font-size: 24px; margin-bottom: 24px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 11px; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
+    .field input { width: 100%; padding: 12px; border: 1px solid var(--border); background: var(--bg); font-family: 'Noto Sans KR', sans-serif; font-size: 14px; outline: none; transition: border .2s; }
+    .field input:focus { border-color: var(--text); }
+    .btn-primary { width: 100%; padding: 14px; background: var(--text); color: var(--bg); border: none; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; letter-spacing: 2px; margin-top: 8px; transition: background .2s; }
+    .btn-primary:hover { background: var(--accent); }
+    .form-switch { text-align: center; margin-top: 16px; font-size: 13px; color: var(--muted); }
+    .form-switch a { color: var(--text); cursor: pointer; text-decoration: underline; }
+    .cart-panel { position: fixed; right: 0; top: 0; bottom: 0; width: min(400px, 100vw); background: var(--card); z-index: 300; transform: translateX(100%); transition: transform .35s; display: flex; flex-direction: column; border-left: 1px solid var(--border); }
+    .cart-panel.open { transform: translateX(0); }
+    .cart-header { padding: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .cart-header h3 { font-family: 'Playfair Display', serif; font-size: 20px; }
+    .cart-items { flex: 1; overflow-y: auto; padding: 16px; }
+    .cart-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .cart-item img { width: 60px; height: 75px; object-fit: cover; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-size: 13px; margin-bottom: 4px; }
+    .cart-item-price { font-size: 12px; color: var(--muted); }
+    .cart-item-remove { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; align-self: flex-start; }
+    .cart-footer { padding: 24px; border-top: 1px solid var(--border); }
+    .cart-total { display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 15px; }
+    .cart-total span:last-child { font-weight: 500; }
+    .empty-cart { text-align: center; padding: 48px 0; color: var(--muted); font-size: 14px; }
+    .order-item { border: 1px solid var(--border); padding: 20px; margin-bottom: 12px; }
+    .order-meta { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 13px; }
+    .order-status { padding: 4px 10px; background: #e8f5e9; color: #388e3c; font-size: 11px; letter-spacing: 1px; }
+    .order-products { font-size: 13px; color: var(--muted); line-height: 1.8; }
+    .order-total { font-size: 15px; font-weight: 500; margin-top: 12px; text-align: right; }
+    .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--text); color: var(--bg); padding: 14px 28px; font-size: 13px; letter-spacing: 1px; transition: transform .3s; z-index: 999; }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    @media (max-width: 600px) { nav, .hero, .filter-bar, .products { padding-left: 20px; padding-right: 20px; } }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="logo">STITCH</div>
+  <div class="nav-right">
+    <button id="btn-orders" style="display:none" onclick="showOrders()">주문내역</button>
+    <button id="btn-auth" onclick="showAuth()">로그인</button>
+    <button id="btn-logout" style="display:none" onclick="logout()">로그아웃</button>
+    <button class="btn-cart" onclick="toggleCart()">장바구니<span class="cart-badge" id="cart-count">0</span></button>
+  </div>
+</nav>
+<div class="hero">
+  <h1>NEW<br>ARRIVALS</h1>
+  <span class="hero-sub">SPRING · 2025</span>
+</div>
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterProducts(null, this)">ALL</button>
+  <button class="filter-btn" onclick="filterProducts('상의', this)">상의</button>
+  <button class="filter-btn" onclick="filterProducts('하의', this)">하의</button>
+  <button class="filter-btn" onclick="filterProducts('아우터', this)">아우터</button>
+</div>
+<div class="products" id="products-grid"></div>
+
+<div class="cart-panel" id="cart-panel">
+  <div class="cart-header">
+    <h3>CART</h3>
+    <button onclick="toggleCart()" style="background:none;border:none;cursor:pointer;font-size:20px;">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>합계</span><span id="cart-total">₩0</span></div>
+    <button class="btn-primary" onclick="checkout()">주문하기</button>
+  </div>
+</div>
+
+<div class="overlay" id="auth-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('auth-modal')">✕</button>
+    <div id="login-form">
+      <h2>로그인</h2>
+      <div class="field"><label>이메일</label><input id="login-email" type="email" placeholder="email@example.com" /></div>
+      <div class="field"><label>비밀번호</label><input id="login-pw" type="password" placeholder="••••••••" /></div>
+      <button class="btn-primary" onclick="login()">로그인</button>
+      <div class="form-switch">계정이 없으신가요? <a onclick="toggleAuthForm()">회원가입</a></div>
+    </div>
+    <div id="register-form" style="display:none">
+      <h2>회원가입</h2>
+      <div class="field"><label>이름</label><input id="reg-name" placeholder="홍길동" /></div>
+      <div class="field"><label>이메일</label><input id="reg-email" type="email" placeholder="email@example.com" /></div>
+      <div class="field"><label>비밀번호</label><input id="reg-pw" type="password" placeholder="••••••••" /></div>
+      <button class="btn-primary" onclick="register()">가입하기</button>
+      <div class="form-switch">이미 계정이 있으신가요? <a onclick="toggleAuthForm()">로그인</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="orders-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('orders-modal')">✕</button>
+    <h2>주문 내역</h2>
+    <div id="orders-list" style="margin-top:24px"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:8000';
+let token = localStorage.getItem('token');
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function showAuth() { document.getElementById('auth-modal').classList.add('show'); }
+function toggleAuthForm() {
+  const lf = document.getElementById('login-form');
+  const rf = document.getElementById('register-form');
+  const isLogin = lf.style.display !== 'none';
+  lf.style.display = isLogin ? 'none' : '';
+  rf.style.display = isLogin ? '' : 'none';
+}
+function authHeader() { return token ? { Authorization: 'Bearer ' + token } : {}; }
+function fmt(n) { return '₩' + Number(n).toLocaleString(); }
+function updateAuthUI() {
+  const loggedIn = !!token;
+  document.getElementById('btn-auth').style.display = loggedIn ? 'none' : '';
+  document.getElementById('btn-logout').style.display = loggedIn ? '' : 'none';
+  document.getElementById('btn-orders').style.display = loggedIn ? '' : 'none';
+}
+
+async function loadProducts(category) {
+  let url = API + '/api/products';
+  if (category) url += '?category=' + encodeURIComponent(category);
+  const res = await fetch(url);
+  const products = await res.json();
+  document.getElementById('products-grid').innerHTML = products.map(p => `
+    <div class="product-card">
+      <img src="${p.image_url}" alt="${p.name}" loading="lazy" />
+      <div class="card-info">
+        <div class="card-category">${p.category}</div>
+        <div class="card-name">${p.name}</div>
+        <div class="card-footer">
+          <div><div class="card-price">${fmt(p.price)}</div><div class="card-stock">재고 ${p.stock}개</div></div>
+          <button class="btn-add" onclick="addToCart(${p.id}, '${p.name}')">담기</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterProducts(category, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadProducts(category);
+}
+
+async function loadCart() {
+  if (!token) {
+    document.getElementById('cart-items').innerHTML = '<div class="empty-cart">로그인 후 이용하세요</div>';
+    document.getElementById('cart-count').textContent = '0';
+    return;
+  }
+  const res = await fetch(API + '/api/cart', { headers: authHeader() });
+  const data = await res.json();
+  const items = data.items || [];
+  document.getElementById('cart-count').textContent = items.length;
+  document.getElementById('cart-total').textContent = fmt(data.total || 0);
+  document.getElementById('cart-items').innerHTML = items.length === 0
+    ? '<div class="empty-cart">장바구니가 비어있습니다</div>'
+    : items.map(item => `
+      <div class="cart-item">
+        <img src="${item.image_url}" alt="${item.name}" />
+        <div class="cart-item-info">
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-price">${fmt(item.price)} × ${item.quantity} = ${fmt(item.subtotal)}</div>
+        </div>
+        <button class="cart-item-remove" onclick="removeFromCart(${item.product_id})">✕</button>
+      </div>`).join('');
+}
+
+function toggleCart() {
+  document.getElementById('cart-panel').classList.toggle('open');
+  loadCart();
+}
+
+async function addToCart(productId, name) {
+  if (!token) { showAuth(); return; }
+  const res = await fetch(API + '/api/cart', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify({ product_id: productId, quantity: 1 })
+  });
+  if (res.ok) { showToast(name + '을(를) 담았습니다'); loadCart(); }
+}
+
+async function removeFromCart(productId) {
+  await fetch(API + '/api/cart/' + productId, { method: 'DELETE', headers: authHeader() });
+  loadCart();
+}
+
+async function checkout() {
+  if (!token) { showToast('로그인이 필요합니다'); return; }
+  const res = await fetch(API + '/api/orders', { method: 'POST', headers: authHeader() });
+  const data = await res.json();
+  if (res.ok) { showToast('주문 완료! 주문번호 #' + data.order_id); loadCart(); }
+  else showToast(data.detail || '주문 실패');
+}
+
+async function showOrders() {
+  document.getElementById('orders-modal').classList.add('show');
+  const res = await fetch(API + '/api/orders', { headers: authHeader() });
+  const orders = await res.json();
+  document.getElementById('orders-list').innerHTML = orders.length === 0
+    ? '<div style="color:var(--muted);font-size:14px">주문 내역이 없습니다</div>'
+    : orders.map(o => `
+      <div class="order-item">
+        <div class="order-meta">
+          <span>주문 #${o.id} · ${new Date(o.created_at).toLocaleDateString('ko-KR')}</span>
+          <span class="order-status">${o.status.toUpperCase()}</span>
+        </div>
+        <div class="order-products">${o.items.map(i => i.product_name + ' × ' + i.quantity).join('<br>')}</div>
+        <div class="order-total">${fmt(o.total_price)}</div>
+      </div>`).join('');
+}
+
+async function login() {
+  const res = await fetch(API + '/api/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: document.getElementById('login-email').value, password: document.getElementById('login-pw').value })
+  });
+  const data = await res.json();
+  if (res.ok) { token = data.token; localStorage.setItem('token', token); updateAuthUI(); closeModal('auth-modal'); showToast(data.name + '님, 환영합니다!'); }
+  else showToast(data.detail);
+}
+
+async function register() {
+  const res = await fetch(API + '/api/register', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: document.getElementById('reg-email').value, password: document.getElementById('reg-pw').value, name: document.getElementById('reg-name').value })
+  });
+  const data = await res.json();
+  if (res.ok) { token = data.token; localStorage.setItem('token', token); updateAuthUI(); closeModal('auth-modal'); showToast('회원가입 완료!'); }
+  else showToast(data.detail);
+}
+
+function logout() {
+  token = null; localStorage.removeItem('token');
+  updateAuthUI(); showToast('로그아웃 되었습니다'); loadCart();
+}
+
+updateAuthUI();
+loadProducts();
+loadCart();
+</script>
+</body>
+</html>
